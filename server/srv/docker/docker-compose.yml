@@ -13,6 +13,36 @@ services:
     networks:
       - webnet
 
+  strongswan:
+    image: ubuntu:22.04
+    container_name: strongswan
+    sysctls:
+      net.ipv4.ip_forward: "1"
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    volumes:
+      - ./nginx/ssl_keys/server_key.pem:/etc/ipsec.d/private/server_key.pem:ro
+      - ./nginx/ssl_keys/fullchain.pem:/etc/ipsec.d/certs/fullchain.pem:ro
+      - ./nginx/client_certs:/etc/ipsec.d/cacerts:ro
+      - ./nginx/client_certs:/etc/strongswan/cacerts:ro
+      - ./strongswan/config/ipsec.conf:/etc/ipsec.conf:ro
+      - ./strongswan/config/ipsec.secrets:/etc/ipsec.secrets:ro
+      - ./strongswan/strongswan-entrypoint.sh:/strongswan-entrypoint.sh:ro
+    ports:
+      - "500:500/udp"
+      - "4500:4500/udp"
+    networks:
+      - webnet
+    entrypoint: ["/bin/sh", "/strongswan-entrypoint.sh"]
+    command: ["ipsec", "start", "--nofork"]
+    
 networks:
   webnet:
     driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/24
+          gateway: 172.20.0.1    

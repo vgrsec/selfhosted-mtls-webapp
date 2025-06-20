@@ -11,8 +11,32 @@ services:
       - /srv/docker/nginx/ssl_keys:/etc/nginx/ssl:ro
       - /srv/docker/nginx/client_certs:/etc/nginx/client_certs:ro
     networks:
-      - webnet
-
+      webnet:
+        ipv4_address: 172.20.0.3
+  wireguard:
+    image: linuxserver/wireguard
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+    ports:
+      - '51820:51820/udp'
+    environment:
+      - DEBUG=true
+      - SYS_MODULE
+    container_name: wireguard
+    networks:
+      webnet:
+        ipv4_address: 172.20.0.5
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    volumes:
+      - ./wireguard/config/wg_confs:/config/wg_confs
+      - ./wireguard/keys:/config/keys
+      - /lib/modules:/lib/modules:ro
 networks:
   webnet:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+          gateway: 172.20.0.1

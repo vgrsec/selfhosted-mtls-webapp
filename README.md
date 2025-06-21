@@ -4,14 +4,36 @@
 
 This repository contains a set of scripts to automate the end-to-end deployment of a self-hosted, mutual-TLS-enabled web application. 
 
+### Web Server
+
 The webserver is running on top of docker compose with NGINX. By default a placeholder site is loaded. To add different services add services to the docker compose file on the server and modify the nginx.conf file to setup path routing
 
-It covers:
+### VPN
 
-1. Preparing files with domain and email information
-1. Generating SSL/TLS certificates (including a local CA for client-side mTLS).  
-1. Packaging the server code into a deployable archive.  
-1. Deploying that archive to a remote server (Ubuntu 22.x).
+The OpenVPN server is running on top of Docker using the official container. Its configured dynamically on launch. It's use is to be able to directly connect to the containers behind nginx when mTLS isn't available. An example is iOS apps are unable to use the mTLS mobile profile. In those cases direct connection over VPN is an alternative. 
+
+The web management portal is protected by the mTLS nginx container described above. 
+
+To obtain the profile 
+* Get the adminpassword from /srv/docker/openvpn-as/etc/adminpassword.txt 
+* Go to example.com/ovpnadmin/
+* Log in with openvpn:password
+* Go to User Profiles
+* Download vpnuser profile
+* Import into client for VPN
+
+**ToDo** 
+* Import the mTLS certificate chain allowing the creation of the VPN profile on the client side 
+* Fix the client URL it doesn't auto import
+
+
+## Scripts 
+The scripts do the following
+
+1. Prepare files with domain and email information
+1. Generate SSL/TLS certificates (including a local CA for client-side mTLS).  
+1. Package the server code into a deployable archive.  
+1. Deploy that archive to a remote server (Ubuntu 22.x).
 
 This can be expanded to cover docker applications behind nginx. 
 
@@ -75,7 +97,11 @@ Run the following scripts in order
   - Requests new signed certificates from Lets Encrypt
   - Restarts webserver with new certificates
 
-- **docker_container_updater.sh**
+- **openvpn-as-setup.sh**
+  - Configures the ovpn server to defaults allowing clients to connect to backend containers when mtls isn't available. 
+  - adds a user who can autoconnect without passwords
+
+- **docker_container_update.sh**
   - Runs once a day
   - Stops web server
   - Pulls latest containers

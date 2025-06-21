@@ -1,5 +1,8 @@
 services:
   nginx:
+    depends_on:
+      - openvpn-as
+      - navidrome    
     image: nginx:latest
     container_name: nginx
     ports:
@@ -8,11 +11,36 @@ services:
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./nginx/html:/usr/share/nginx/html:ro
-      - /srv/docker/nginx/ssl_keys:/etc/nginx/ssl:ro
-      - /srv/docker/nginx/client_certs:/etc/nginx/client_certs:ro
+      - ./nginx/ssl_keys:/etc/nginx/ssl:ro
+      - ./nginx/client_certs:/etc/nginx/client_certs:ro
     networks:
-      - webnet
+      webnet:
+        ipv4_address: 172.20.0.3        
+  openvpn-as:
+    image: openvpn/openvpn-as:latest
+    container_name: openvpn-as
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+    ports:
+      - "1194:1194/udp"
+    volumes:
+      - ./openvpn:/openvpn
+#      - ./nginx/ssl_keys/fullchain.pem:/openvpn/etc/web-ssl/server.crt:ro
+#      - ./nginx/ssl_keys/privkey.pem:/openvpn/etc/web-ssl/server.key:ro
+#      - ./nginx/client_certs/ca.crt:/openvpn/etc/web-ssl/ca.crt:ro
+#      - ./nginx/ssl_keys/ssl-dhparams.pem:/openvpn/etc/openvpn/pki/dh.pem:ro
+    networks:
+      webnet:
+        ipv4_address: 172.20.0.4
+    restart: unless-stopped
 
 networks:
   webnet:
     driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: webnet
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24

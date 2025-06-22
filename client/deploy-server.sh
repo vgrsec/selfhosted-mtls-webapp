@@ -90,8 +90,10 @@ ssh -i "$IDENTITY_KEY" -o BatchMode=yes "$REMOTE_USER@$REMOTE_HOST" bash <<EOF
   fi
   sudo sync -a --delete "${REMOTE_DIR}/request_le_cert.sh" /srv/
   sudo ln -s /srv/request_le_cert.sh /etc/cron.weekly/request_le_cert
-  sudo sync -a --delete "${REMOTE_DIR}/docker_container_updater.sh" /srv/
-  sudo ln -s /srv/docker_container_updater.sh /etc/cron.daily/docker_container_updater
+  sudo sync -a --delete "${REMOTE_DIR}/docker_container_update.sh" /srv/
+  sudo ln -s /srv/docker_container_update.sh /etc/cron.daily/docker_container_update
+  sudo sync -a --delete "${REMOTE_DIR}/openvpn-as-setup.sh" /srv/
+  sudo "${REMOTE_DIR}/openvpn-as-setup.sh"
 EOF
 
 echo "Deployment complete."

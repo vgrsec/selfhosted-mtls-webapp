@@ -1,0 +1,19 @@
+. {
+    log
+    errors
+    cancel
+
+    view docker {
+        expr name() matches '^[a-zA-Z0-9-_]+\\.docker\\.$'
+    }
+
+    rewrite name suffix .docker . answer auto
+
+    forward . 127.0.0.11
+}
+
+. {
+    acl {
+        block
+    }
+}

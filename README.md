@@ -14,18 +14,35 @@ The OpenVPN server is running on top of Docker using the official container. Its
 
 The web management portal is protected by the mTLS nginx container described above. 
 
+The nginx default.conf is doing a number of inline string replacements and redirects to allow custom url endpoints. If something breaks, likely OpenVPN modified the way they're handling the URL
+
+/ovpnclient/
 To obtain the profile 
 * Get the adminpassword from /srv/docker/openvpn-as/etc/adminpassword.txt 
-* Go to example.com/ovpnadmin/
+* Go to example.com/ovpnclient/
 * Log in with openvpn:password
 * Go to User Profiles
 * Download vpnuser profile
 * Import into client for VPN
 
+/ovpnadmin/
+To login as admin 
+* Get the adminpassword from /srv/docker/openvpn-as/etc/adminpassword.txt 
+* Go to example.com/ovpnadmin/
+* Log in with openvpn:password
+
+
 **ToDo** 
 * Import the mTLS certificate chain allowing the creation of the VPN profile on the client side 
-* Fix the client URL it doesn't auto import
 
+
+### DNS
+
+In order to remove the need to staticly assign IP addresses to all containers, DNS is established to connect to services when on VPN. 
+
+DNS is served from coredns pinned to a specific version and is hosted at 172.20.0.2 providing all containers with .docker TLD
+
+A fantastic read on how this works is: https://theorangeone.net/posts/expose-docker-internal-dns/
 
 ## Scripts 
 The scripts do the following
@@ -36,6 +53,7 @@ The scripts do the following
 1. Deploy that archive to a remote server (Ubuntu 22.x).
 
 This can be expanded to cover docker applications behind nginx. 
+
 
 ## How to Install
 
@@ -108,3 +126,4 @@ Run the following scripts in order
   - Restarts
 
 ---
+

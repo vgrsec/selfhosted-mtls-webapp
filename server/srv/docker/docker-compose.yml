@@ -1,8 +1,16 @@
 services:
+  coredns:
+    image: coredns/coredns:1.11.3
+    volumes:
+      - ./coredns/Corefile:/home/nonroot/Corefile:ro
+    ports:
+      - "127.0.0.1:53:53/udp"
+    networks:
+      webnet:
+        ipv4_address: 172.20.0.2  
   nginx:
     depends_on:
-      - openvpn-as
-      - navidrome    
+      - openvpn-as  
     image: nginx:latest
     container_name: nginx
     ports:
@@ -14,8 +22,7 @@ services:
       - ./nginx/ssl_keys:/etc/nginx/ssl:ro
       - ./nginx/client_certs:/etc/nginx/client_certs:ro
     networks:
-      webnet:
-        ipv4_address: 172.20.0.3        
+      - webnet
   openvpn-as:
     image: openvpn/openvpn-as:latest
     container_name: openvpn-as
@@ -32,8 +39,7 @@ services:
 #      - ./nginx/client_certs/ca.crt:/openvpn/etc/web-ssl/ca.crt:ro
 #      - ./nginx/ssl_keys/ssl-dhparams.pem:/openvpn/etc/openvpn/pki/dh.pem:ro
     networks:
-      webnet:
-        ipv4_address: 172.20.0.4
+      - webnet
     restart: unless-stopped
 
 networks:

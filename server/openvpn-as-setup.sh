@@ -48,7 +48,7 @@ docker exec "$CONTAINER" $SACLI_CMD \
 docker exec "$CONTAINER" $SACLI_CMD \
   --prof "Default" \
   --key "host.name" \
-  --value "example.com" \
+  --value "example.com/ovpnclient" \
   ConfigPut
 
 docker exec "$CONTAINER" $SACLI_CMD \
@@ -137,8 +137,20 @@ docker exec "$CONTAINER" $SACLI_CMD \
 
 docker exec "$CONTAINER" $SACLI_CMD \
   --prof "Default" \
+  --key "vpn.server.routing.private_network.1" \
+  --value "172.27.240.0/20" \
+  ConfigPut
+
+docker exec "$CONTAINER" $SACLI_CMD \
+  --prof "Default" \
   --key "vpn.server.routing.allow_private_nets_to_clients" \
   --value "true" \
+  ConfigPut
+
+docker exec "$CONTAINER" $SACLI_CMD \
+  --prof "Default" \
+  --key "vvpn.server.tls_cc_security" \
+  --value "tls-crypt" \
   ConfigPut
 
 # Create the VPN User (Passwordless)
@@ -172,6 +184,31 @@ docker exec "$CONTAINER" $SACLI_CMD \
   --value "true" \
   UserPropPut
 
+docker exec "$CONTAINER" $SACLI_CMD \
+  --key "vpn.client.routing.inter_client" \
+  --value "true" \
+  ConfigPut
+
+docker exec "$CONTAINER" $SACLI_CMD \
+  --key "vpn.client.routing.reroute_dns" \
+  --value "custom" \
+  ConfigPut
+
+docker exec "$CONTAINER" $SACLI_CMD \
+  --key "vpn.client.routing.reroute_gw" \
+  --value "custom" \
+  ConfigPut
+
+docker exec "$CONTAINER" $SACLI_CMD \
+  --key "vpn.server.dhcp_option.dns.0" \
+  --value "172.20.0.2" \
+  ConfigPut
+
+docker exec "$CONTAINER" $SACLI_CMD \
+  --key "vpn.server.dhcp_option.domain" \
+  --value ".docker, docker, docker." \
+  ConfigPut
+
 # Take down service
 docker compose down openvpn-as
 # Uncomment all lines in docker-compose.yml
@@ -181,4 +218,12 @@ sed -i 's/^#//g' "$COMPOSE_FILE"
 
 # Restart Services
 ../docker_container_update.sh
+
+docker compose logs openvpn-as \
+  | grep 'Auto-generated pass =' \
+  | grep -oP '(?<=Auto-generated pass = ")[^"]+' \
+  > ./openvpn/etc/adminpassword.txt
+
+echo "admin password written to ./openvpn/etc/adminpassword.txt"
+
 

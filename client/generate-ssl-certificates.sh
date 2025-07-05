@@ -68,7 +68,7 @@ keyUsage = critical,keyCertSign,cRLSign
 EOF
   openssl req -x509 -new -key "$CA_KEY_LOCAL" \
     -sha256 -days 3650 \
-    -subj "/C=US/ST=California/L=City/O=Org/OU=IT/CN=${DOMAIN}-CA" \
+    -subj "/C=KS/ST=Oz/L=Emerald City/O=Wizard/OU=BehindCurtain/CN=${DOMAIN}-CA" \
     -extensions v3_ca -config "$tmpdir/ca_ext.cnf" \
     -out "$CA_CERT_LOCAL"
 fi
